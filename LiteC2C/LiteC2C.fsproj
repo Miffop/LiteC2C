@@ -7,12 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Parser\Parser.fs" />
+    <Compile Include="AST\AST.fs" />
+    <Content Include="zProg\Factorial.txt" />
     <Compile Include="Program.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="AST\" />
-    <Folder Include="Parser\" />
-    <Folder Include="zProg\" />
   </ItemGroup>
 </Project>

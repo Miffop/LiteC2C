@@ -1,0 +1,14 @@
+﻿
+int Fact int a = 
+	int result = 1
+	for int i = 2;i < a;i++ do
+		result *= a
+	return result
+int main () = 
+	int x = 6
+	int fx = Fact x
+	printf "%i\n" x
+	return 0
+	
+		
+		
