@@ -40,6 +40,12 @@ module Parser =
         )
         let (<^>) f p = 
             ret f<*>p
+        let (<* ) p q = (fun x _->x)<^>p<*>q
+        let ( *>) p q = (fun _ x->x)<^>p<*>q
+
+    
+    let choose ls =
+        List.fold(<|>)fail ls
     
     let any p = P(fun t->
         let mutable ts = t
@@ -58,7 +64,7 @@ module Parser =
         |_->None
     )
     let token t = satisfy((=)t)
-    
+    let one = P(function t::ts->Some(t,ts) | []->None)
 
 [<CustomEquality>]
 [<CustomComparison>]
@@ -93,7 +99,7 @@ module Indentation =
             let! restOfTheLine = Parser.any(Parser.satisfy((<>)resetToken))
             let! _ = Parser.token resetToken
             let indentation = List.length indentations
-            return List.map(fun t->t,indentation)restOfTheLine
+            return List.mapi(fun i t->t,{Margin = indentation;Offset = i})restOfTheLine
         }
     let text indentationToken resetToken =
         List.concat<^>Parser.any(line indentationToken resetToken)
@@ -143,7 +149,8 @@ module Indentation =
         let (<**>) p q = (fun x y -> y x)<^>p<*>q
         let (<??>) p q = p<**>(q<|>lazy(ret id))
 
-    let satisfy c =
+        
+    let satisfy c : Parser<'t*Position,'t*Position> =
         Parser.satisfy(fst>>c)
     let token t =
         satisfy((=)t)
@@ -204,3 +211,14 @@ module Indentation =
         |[] -> Parser.run p []
     )
 
+    let bindOption f p = 
+        Monad(){
+            let! x = p
+            match f x with
+            |Some(x)->return x
+            |None ->return! Parser.fail
+        }
+    let mapTokens (m:Map<'a,'b>) = 
+        (fun x->m[x])<^>satisfy(flip Map.containsKey m)
+
+        

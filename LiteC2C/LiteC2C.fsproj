@@ -10,6 +10,7 @@
     <Compile Include="Parser\Parser.fs" />
     <Compile Include="Parser\Tokenisation.fs" />
     <Compile Include="AST\AST.fs" />
+    <Content Include="zProg\test.txt" />
     <Content Include="zProg\Factorial.txt" />
     <Compile Include="Program.fs" />
   </ItemGroup>
