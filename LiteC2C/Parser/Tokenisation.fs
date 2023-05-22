@@ -22,32 +22,30 @@ module Tokenisation =
             |>Parser.choose
         List.reduce(+)>>Token.String<^>Indentation.pack '"' (Indentation.any char) '"',
         Token.Char<^>Indentation.pack '\'' (char) '\''
-    let inline sign p = 
-        [
-            lazy(Indentation.Monad(){
-                let! s = Indentation.token '-' <|> lazy(Indentation.token '+')
-                let! x = p
-                match s with
-                |'+'->return x
-                |'-'->return -x
-                |_  ->return! Parser.fail
-            })
-            lazy(p)
-        ]
-        |>Parser.choose
     let intToken =
         let uint = 
             List.fold(sprintf"%s%c")"">>int<^>Indentation.some(Indentation.satisfy System.Char.IsDigit)
-        Token.Int<^>sign uint
+        Token.Int<^>uint
     let floatToken = 
         let ufloat = 
             (fun x d z->x@(d::z))<^>Indentation.some(Indentation.satisfy System.Char.IsDigit)<*>Indentation.token '.'<*>Indentation.any(Indentation.satisfy System.Char.IsDigit)
             |>(<^>)(List.fold(sprintf"%s%c")"">>float)
-        Token.Float<^>sign ufloat
+        Token.Float<^>ufloat
     let stringPattern(s:string)=
         (fun _->s)<^>Indentation.pattern(List.ofSeq s)
     let opToken = 
         [
+            //assign
+            lazy(stringPattern("+="))
+            lazy(stringPattern("-="))
+            lazy(stringPattern("*="))
+            lazy(stringPattern("/="))
+            lazy(stringPattern("%="))
+            lazy(stringPattern("&="))
+            lazy(stringPattern("^="))
+            lazy(stringPattern("|="))
+            lazy(stringPattern(">>="))
+            lazy(stringPattern("<<="))
             //arithmetic
             lazy(stringPattern("++"))
             lazy(stringPattern("--"))
@@ -82,8 +80,8 @@ module Tokenisation =
             lazy(stringPattern("="))
             lazy(stringPattern(","))
             lazy(stringPattern(";"))
-            lazy(stringPattern("?"))
-            lazy(stringPattern(":"))
+            //unit
+            lazy(stringPattern("()"))
         ]
         |>Parser.choose
         |>(<^>)Token.Op
@@ -95,6 +93,9 @@ module Tokenisation =
             let ops = 
                 [
                     "sizeof"
+                    "if"
+                    "then"
+                    "else"
                 ]
             function 
             |x when List.contains x ops -> Token.Op x
@@ -124,8 +125,8 @@ module Tokenisation =
             lazy(stringToken)
             lazy(charToken)
 
-            lazy(braceToken)
             lazy(opToken)
+            lazy(braceToken)
             lazy(wordToken)
         ]
         |>Parser.choose

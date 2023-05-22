@@ -2,7 +2,7 @@
 
 [<EntryPoint>]
 let main argv =
-    let code = System.IO.File.ReadAllText("./../../../zProg/Factorial.txt") + " \n"
+    let code = System.IO.File.ReadAllText("./../../../zProg/test.txt") + " \n"
     
     match Seq.tryFindIndex((=)'\t')code with
     |Some(x)->failwithf "за табы бан:\n%s"<|code.Substring(x)
@@ -19,9 +19,15 @@ let main argv =
         |>Parser.run(Tokenisation.Tokenizer)
         |>Option.map(fst)
         |>Option.defaultValue []
+    let exp = 
+        tokens
+        |>Parser.run(ExpressionParser.Expression)
+        |>Option.map(fst)
         
     tokens
     |>List.iter(printfn "%A")
+
+    printfn "%A" exp
 
     System.Console.ReadKey()|>ignore
     0

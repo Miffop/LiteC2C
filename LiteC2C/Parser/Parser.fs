@@ -107,7 +107,7 @@ module Indentation =
     let private position:Parser<Position,'t*Position> = P(
         function
         |(t,p)::tp->Some(p,(t,p)::tp)
-        |[]->None//Some({Margin = -1;Offset = 0},[])
+        |[]->Some({Margin = -1;Offset = 0},[])
     )
     let ret x = 
         Parser.Monad(){
@@ -177,6 +177,22 @@ module Indentation =
         applyAll<^>p<*>any(flip<^>op<*>p)
     let rec chainBack op p = 
         p<??>(flip<^>op<.>lazy(chainBack op p))
+
+    let chainPrefix op p =  
+        List.rev>>flip applyAll<^>any(op)<*>p
+    let chainPostfix op p = 
+        p<??>(flip applyAll<^>any(op))
+    
+    module Patrial = 
+        let chain op p = 
+            applyAll<^>p<*>some(flip<^>op<*>p)
+        let chainBack op p = 
+            p<**>(flip<^>op<.>lazy(chainBack op p))
+        let chainPrefix op p =  
+            List.rev>>flip applyAll<^>some(op)<*>p
+        let chainPostfix op p = 
+            p<**>(flip applyAll<^>some(op))
+    
 
     let prefix pref p = token pref *> p 
     let prefixLazy pref p = token pref .> p

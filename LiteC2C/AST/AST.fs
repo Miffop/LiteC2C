@@ -1,7 +1,8 @@
 ﻿namespace LiteC2C.AST
 
+[<RequireQualifiedAccess>]
 type Type = 
-    |CustomType of string
+    |Custom of string
     |Struct of Name list
     |Pointer of Type
 and Name =
@@ -27,52 +28,72 @@ and Command =
     |ForLoop of Command*Expression*Expression*Codeblock
     |DoBlock of Codeblock
 and Operator =
-    //Maths
-    |Add
-    |Sub
+    //1
+    //function call
+    //2
+    |IncPost
+    |DecPost
+    |Index
+    |StructDeref
+    |StructRef
+    //3
+    |IncPre
+    |DecPre
+    |Neg
+    |Not
+    |BitNot
+    |CastType
+    |Deref
+    |Ref
+    |SizeOf
+    //5
     |Mul
     |Div
     |Mod
-    //Maths unary
-    |Neg
-    |IncPre
-    |IncPost
-    |DecPre
-    |DecPost
-    //Comparison
-    |Eql
-    |Neq
+    //6
+    |Add
+    |Sub
+    //7
+    |Shl
+    |Shr
+    //9
     |Grt
     |Lss
     |Geq
     |Leq
-    //Logic
-    |Not
-    |And
-    |Or
-    //Bitwise
-    |BitNot
+    //10
+    |Eql
+    |Neq
+    //11
     |BitAnd
-    |BitOr
+    //12
     |Xor
-    |Shl
-    |Shr
-    //Poiters
-    |Index
-    |Deref
-    |Ref
-    |StructDeref
-    |StructRef
-    //Other(by eng wiki)
-    |Comma
+    //13
+    |BitOr
+    //14
+    |And
+    //15
+    |Or
+    //17
     |Ternary
-    |SizeOf
-    |Conversion
+    |Assign
+    |AssignAdd
+    |AssignSub
+    |AssignMul
+    |AssignDiv
+    |AssignMod
+    |AssignAnd
+    |AssignXor
+    |AssignOr
+    |AssignShr
+    |AssignShl
+    //18
+    |Comma
 
 and Literal = 
     |Int of int
     |Float of float
-    |Char of char
+    |Char of string
     |String of string
     |TypeName of Type
 
