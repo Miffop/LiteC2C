@@ -46,6 +46,9 @@ module Tokenisation =
             lazy(stringPattern("|="))
             lazy(stringPattern(">>="))
             lazy(stringPattern("<<="))
+            //poiters
+            lazy(stringPattern("."))
+            lazy(stringPattern("->"))
             //arithmetic
             lazy(stringPattern("++"))
             lazy(stringPattern("--"))
@@ -73,9 +76,6 @@ module Tokenisation =
             lazy(stringPattern("&"))
             lazy(stringPattern("|"))
             lazy(stringPattern("^"))
-            //poiters
-            lazy(stringPattern("."))
-            lazy(stringPattern("->"))
             //evaluation
             lazy(stringPattern("="))
             lazy(stringPattern(","))

@@ -1,4 +1,5 @@
-﻿open LiteC2C.Parser
+﻿open LiteC2C.AST
+open LiteC2C.Parser
 
 [<EntryPoint>]
 let main argv =
@@ -19,15 +20,23 @@ let main argv =
         |>Parser.run(Tokenisation.Tokenizer)
         |>Option.map(fst)
         |>Option.defaultValue []
+    
+    tokens
+    |>List.iter(printfn "%A")
+    
     let exp = 
         tokens
         |>Parser.run(ExpressionParser.Expression)
-        |>Option.map(fst)
-        
-    tokens
-    |>List.iter(printfn "%A")
-
+        |>Option.map(fst>>fst)
+        |>Option.defaultValue (Error "parser failure")
+    
     printfn "%A" exp
+    
+    let result = 
+        exp
+        |>Translation.Translate Translation.Expression.Expression
+    
+    printfn "%A" result
 
     System.Console.ReadKey()|>ignore
     0

@@ -31,66 +31,67 @@ and Operator =
     //1
     //function call
     //2
-    |IncPost
-    |DecPost
-    |Index
-    |StructDeref
-    |StructRef
+    |IncPost        = 0x0000
+    |DecPost        = 0x0001
+    |Index          = 0x0002
+    |StructDeref    = 0x0003
+    |StructRef      = 0x0004
     //3
-    |IncPre
-    |DecPre
-    |Neg
-    |Not
-    |BitNot
-    |CastType
-    |Deref
-    |Ref
-    |SizeOf
+    |IncPre         = 0x0100
+    |DecPre         = 0x0101
+    |Neg            = 0x0102
+    |Not            = 0x0103
+    |BitNot         = 0x0104
+    |CastType       = 0x0105
+    |Deref          = 0x0106
+    |Ref            = 0x0107
+    |SizeOf         = 0x0108
     //5
-    |Mul
-    |Div
-    |Mod
+    |Mul            = 0x0200
+    |Div            = 0x0201
+    |Mod            = 0x0202
     //6
-    |Add
-    |Sub
+    |Add            = 0x0300
+    |Sub            = 0x0301
     //7
-    |Shl
-    |Shr
+    |Shl            = 0x0400
+    |Shr            = 0x0401
     //9
-    |Grt
-    |Lss
-    |Geq
-    |Leq
+    |Grt            = 0x0500
+    |Lss            = 0x0501
+    |Geq            = 0x0502
+    |Leq            = 0x0503
     //10
-    |Eql
-    |Neq
+    |Eql            = 0x0600
+    |Neq            = 0x0601
     //11
-    |BitAnd
+    |BitAnd         = 0x0700
     //12
-    |Xor
+    |Xor            = 0x0800
     //13
-    |BitOr
+    |BitOr          = 0x0900
     //14
-    |And
+    |And            = 0x0A00
     //15
-    |Or
+    |Or             = 0x0B00
     //17
-    |Ternary
-    |Assign
-    |AssignAdd
-    |AssignSub
-    |AssignMul
-    |AssignDiv
-    |AssignMod
-    |AssignAnd
-    |AssignXor
-    |AssignOr
-    |AssignShr
-    |AssignShl
+    |Ternary        = 0x0C00
+    |Assign         = 0x0C01
+    |AssignAdd      = 0x0C02
+    |AssignSub      = 0x0C03
+    |AssignMul      = 0x0C04
+    |AssignDiv      = 0x0C05
+    |AssignMod      = 0x0C06
+    |AssignAnd      = 0x0C07
+    |AssignXor      = 0x0C08
+    |AssignOr       = 0x0C09
+    |AssignShr      = 0x0C0A
+    |AssignShl      = 0x0C0B
     //18
-    |Comma
+    |Comma          = 0x0D00
 
-and Literal = 
+
+and [<RequireQualifiedAccess>] Literal = 
     |Int of int
     |Float of float
     |Char of string
@@ -102,3 +103,4 @@ and Expression =
     |F of Operator
     |L of Literal
     |Var of string
+    |Error of string

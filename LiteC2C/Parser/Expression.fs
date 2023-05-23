@@ -134,7 +134,7 @@ module ExpressionParser =
                 Token.Op ",",   Op(F Operator.Comma)
             ]
             |>precedenceLayer
-            |>Indentation.chainBack
+            |>Indentation.chain
     module Unary = 
         let private Op op x = Application(op,x::[])
         let Precedence2 x = 
