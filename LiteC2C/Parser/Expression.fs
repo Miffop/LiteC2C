@@ -164,21 +164,32 @@ module ExpressionParser =
                 Token.Op "~",   Op(F Operator.BitNot)
                 Token.Op "*",   Op(F Operator.Deref)
                 Token.Op "&",   Op(F Operator.Ref)
+                Token.Op "sizeof",
+                                Op(F Operator.SizeOf)
             ]
             |>precedenceLayer
             |>flip(<|>)(lazy(TypeCasting))
-            |>Indentation.chainPrefix
+            |>Indentation.Backtracking.chainPrefix
     module Special = 
-        let IfThenElse (x:Parser<_,_>Lazy) p = 
-            let p = Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") p
+        let IfThenElse x = 
+            let elseif = 
+                Indentation.Monad(){
+                    let! _ = Indentation.token(Token.Op "else")
+                    let! _ = Indentation.token(Token.Op "if")
+                    let! c = x
+                    let! _ = Indentation.token(Token.Op "then")
+                    let! a = x
+                    return (fun b->Application(F Operator.Ternary,c::a::b::[]))
+                }
             Indentation.Monad(){
                 let! _ = Indentation.token(Token.Op "if")
-                let! c = x.Value
+                let! c = x
                 let! _ = Indentation.token(Token.Op "then")
-                let! a = x.Value
+                let! a = x
+                let! branches = Indentation.any elseif
                 let! _ = Indentation.token(Token.Op "else")
-                let! b = p
-                return Application(F Operator.Ternary,c::a::b::[])
+                let! b = x
+                return Application(F Operator.Ternary,c::a::List.foldBack id branches b::[])
             }
         
         let FuctionCall p = 
@@ -188,7 +199,7 @@ module ExpressionParser =
                 (fun l x->Application(x,l))<^>Indentation.some(p)
             p<??>(normalCall<|>lazy(emptyCall))
     module Elem = 
-        let Literal = 
+        let literal = 
             let f = 
                 function
                 |Token.Int(x)->     Some<|L(Literal.Int x)
@@ -197,11 +208,21 @@ module ExpressionParser =
                 |Token.Char(x)->    Some<|L(Literal.Char x)
                 |_->                None
             Indentation.bindOption f Parser.one
+        let var = 
+            let f = 
+                function
+                |Token.Word(x)->    Some<|Var(x)
+                |_->                None
+            Indentation.bindOption f Parser.one
+        let typeName = 
+            (Literal.TypeName>>L)<^>Indentation.pack(Token.Open "(") TypeParser.parser (Token.Close "(")
+
+
     let rec Expression = 
         let layers = 
             [
                 Binary.Precedence18 
-                Special.IfThenElse (lazy(Expression))<||>Binary.Precedence17
+                Binary.Precedence17
                 Binary.Precedence15
                 Binary.Precedence14
                 Binary.Precedence13
@@ -216,9 +237,15 @@ module ExpressionParser =
                 Unary.Precedence2 (lazy(Expression))<||>Binary.Precedence2
                 Special.FuctionCall
             ]
-        List.foldBack(fun x y->x y)layers Element
+        Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") 
+        <|List.foldBack(fun x y->x y)layers Element
+        
     and Element = 
         [
-            lazy(Elem.Literal)
+            lazy(Elem.literal)
+            lazy(Elem.var)
+            lazy(Elem.typeName)
+            lazy(Special.IfThenElse (Expression))
+            lazy(Indentation.packLazy (Token.Open "(") (lazy(Expression)) (Token.Close "("))
         ]
         |>Parser.choose

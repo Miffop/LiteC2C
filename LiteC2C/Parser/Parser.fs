@@ -132,7 +132,7 @@ module Indentation =
                 let! x = p2
                 return f x
             }
-        let (<.>) p1 (p2:Parser<'a,'t>Lazy) = 
+        let (<.>) p1 (p2:Parser<_,_>Lazy) = 
             Monad(){
                 let! f = p1 
                 let! x = p2.Value
@@ -168,6 +168,8 @@ module Indentation =
             return List.map fst x,pos
         }
     
+    
+    
     let flip f x y = f y x
     let rec applyAll x fs =
         match fs with
@@ -179,10 +181,19 @@ module Indentation =
         p<??>(flip<^>op<.>lazy(chainBack op p))
 
     let chainPrefix op p =  
-        List.rev>>flip applyAll<^>any(op)<*>p
+        (List.rev>>flip applyAll<^>some(op)<*>p)<|>lazy(p)
     let chainPostfix op p = 
         p<??>(flip applyAll<^>any(op))
     
+    module Backtracking = 
+        let rec chainPrefix op p = 
+            Monad(){
+                let! x = op
+                let! rest = chainPrefix op p
+                return x(rest)
+            }<|>lazy(p)
+    
+
     module Patrial = 
         let chain op p = 
             applyAll<^>p<*>some(flip<^>op<*>p)

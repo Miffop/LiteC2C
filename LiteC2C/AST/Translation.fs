@@ -4,6 +4,7 @@ type 't Translation =
     |Text of string
     |Data of 't
     |Mix of 't Translation list
+    |Error of string
 
 module Translation = 
     
@@ -17,6 +18,8 @@ module Translation =
         |Mix(Mix(a)::rest)->Mix(a@rest)
         |Mix(a::Mix(b)::rest)->Mix((a::b)@rest)
         |Mix([])->Text ""
+        |Mix(Error(x)::_)->Error(x)
+        |Mix(_::Error(x)::_)->Error(x)
         |x->x
     let Translate translator data = 
         Seq.unfold(fun x->let nx = TranslateStep translator x in if nx = x then None else Some(nx,nx))(Data data)
@@ -37,11 +40,11 @@ module Translation =
     module Expression = 
         let literal = 
             function
-            |Literal.Int      x -> Text<|sprintf "%i"        x
-            |Literal.Float    x -> Text<|sprintf "%ff"       x
-            |Literal.Char     x -> Text<|sprintf "'%s'"      x
-            |Literal.String   x -> Text<|sprintf "\"%s\""    x
-            |x->Data x
+            |Literal.Int      x -> Text<|sprintf "%i"     x
+            |Literal.Float    x -> Text<|sprintf "%ff"    x
+            |Literal.Char     x -> Text<|sprintf "'%s'"   x
+            |Literal.String   x -> Text<|sprintf "\"%s\"" x
+            |Literal.TypeName x -> Text<<sprintf "(%s)"<|TranslateFinal typeName x
         let PrecedenceUnary ref a = 
             match a with
             |Application(F x,y) when (int x &&& 0xFF00) > (int ref &&& 0xFF00) -> Mix[Text"(";Data a;Text")"]
@@ -57,6 +60,7 @@ module Translation =
             Mix[PrecedenceGeq ref a;Text op;PrecedenceUnary ref b]
         let Expression =
             function
+            
             //2
             |Application(F Operator.IncPost,    a::[])      -> Mix[PrecedenceUnary(Operator.IncPost) a;Text "++"]
             |Application(F Operator.DecPost,    a::[])      -> Mix[PrecedenceUnary(Operator.DecPost) a;Text "--"]
@@ -71,8 +75,10 @@ module Translation =
             |Application(F Operator.BitNot,     a::[])      -> Mix[Text"~";PrecedenceUnary(Operator.BitNot)a]
             |Application(F Operator.Ref,        a::[])      -> Mix[Text"&";PrecedenceUnary(Operator.Ref)a]
             |Application(F Operator.Deref,      a::[])      -> Mix[Text"*";PrecedenceUnary(Operator.Deref)a]
-            |Application(F Operator.CastType,   a::b::[])   -> Mix[Text"(";Data a;Text")";PrecedenceUnary(Operator.CastType)b]
-            |Application(F Operator.SizeOf,     a::[])      -> Mix[Text"sizeof";PrecedenceUnary(Operator.SizeOf)a]
+            |Application(F Operator.CastType,   a::b::[])   -> Mix[Data a;PrecedenceUnary(Operator.CastType)b]
+            |Application(F Operator.SizeOf,     L(Literal.TypeName t)::[])
+                                                            -> Mix[Text"sizeof";Data(L<|Literal.TypeName t)]
+            |Application(F Operator.SizeOf,     a::[])      -> Mix[Text"sizeof ";PrecedenceUnary(Operator.SizeOf)a]
             //5
             |Application(F Operator.Mul,        a::b::[])   -> BinaryOpLeft Operator.Mul        "*"     a b
             |Application(F Operator.Div,        a::b::[])   -> BinaryOpLeft Operator.Div        "/"     a b
@@ -113,12 +119,28 @@ module Translation =
             |Application(F Operator.AssignAnd,  a::b::[])   -> BinaryOpRight Operator.AssignAnd "&="    a b
             |Application(F Operator.AssignXor,  a::b::[])   -> BinaryOpRight Operator.AssignXor "^="    a b
             |Application(F Operator.AssignOr,   a::b::[])   -> BinaryOpRight Operator.AssignOr  "|="    a b
-            |Application(F Operator.Ternary,    a::b::c::[])-> Mix[Text"(";Data a;Text "?";Data b;Text":";Data c;Text ")"]
+            //17
+            |Application(F Operator.Ternary,    a::b::c::[])-> Mix[PrecedenceGeq(Operator.Ternary)a;Text "?";Data b;Text":";PrecedenceUnary(Operator.Ternary)c]
             //18
             |Application(F Operator.Comma,      a::b::[])   -> BinaryOpLeft Operator.Comma      ","     a b
-            
-            
+            //1
+            |Application(f,p::ps)                           -> let mapArgument = 
+                                                                    function
+                                                                    |Application(F Operator.Comma,x)->Mix[Text"(";Data<|Application(F Operator.Comma,x);Text")"]
+                                                                    |x->Data x
+                                                               let parameters =
+                                                                    let foldBack f a l = List.foldBack f l a
+                                                                    ps
+                                                                    |>List.rev
+                                                                    |>List.map(mapArgument)
+                                                                    |>foldBack(fun x y->x::Text","::y)[]
+                                                                    |>List.rev
+                                                                    |>Mix
+                                                               Mix[PrecedenceUnary(Operator.Call)f;Text"(";mapArgument p;parameters;Text")"]
+            |Application(f,[])                              -> Mix[PrecedenceUnary(Operator.Call)f;Text"()"]
+            //Other
             |L(x) -> Text(TranslateFinal literal x)
+            |Var(x) -> Text(x)
             
-
+            |Expression.Error(x)->Translation.Error(x)
             |x->Data x

@@ -28,67 +28,66 @@ and Command =
     |ForLoop of Command*Expression*Expression*Codeblock
     |DoBlock of Codeblock
 and Operator =
-    //1
-    //function call
     //2
-    |IncPost        = 0x0000
-    |DecPost        = 0x0001
-    |Index          = 0x0002
-    |StructDeref    = 0x0003
-    |StructRef      = 0x0004
+    |IncPost        = 0x0100
+    |DecPost        = 0x0101
+    |Index          = 0x0102
+    |StructDeref    = 0x0103
+    |StructRef      = 0x0104
+    |Call           = 0x0105
     //3
-    |IncPre         = 0x0100
-    |DecPre         = 0x0101
-    |Neg            = 0x0102
-    |Not            = 0x0103
-    |BitNot         = 0x0104
-    |CastType       = 0x0105
-    |Deref          = 0x0106
-    |Ref            = 0x0107
-    |SizeOf         = 0x0108
+    |IncPre         = 0x0200
+    |DecPre         = 0x0201
+    |Neg            = 0x0202
+    |Not            = 0x0203
+    |BitNot         = 0x0204
+    |CastType       = 0x0205
+    |Deref          = 0x0206
+    |Ref            = 0x0207
+    |SizeOf         = 0x0208
     //5
-    |Mul            = 0x0200
-    |Div            = 0x0201
-    |Mod            = 0x0202
+    |Mul            = 0x0300
+    |Div            = 0x0301
+    |Mod            = 0x0302
     //6
-    |Add            = 0x0300
-    |Sub            = 0x0301
+    |Add            = 0x0400
+    |Sub            = 0x0401
     //7
-    |Shl            = 0x0400
-    |Shr            = 0x0401
+    |Shl            = 0x0500
+    |Shr            = 0x0501
     //9
-    |Grt            = 0x0500
-    |Lss            = 0x0501
-    |Geq            = 0x0502
-    |Leq            = 0x0503
+    |Grt            = 0x0600
+    |Lss            = 0x0601
+    |Geq            = 0x0602
+    |Leq            = 0x0603
     //10
-    |Eql            = 0x0600
-    |Neq            = 0x0601
+    |Eql            = 0x0700
+    |Neq            = 0x0701
     //11
-    |BitAnd         = 0x0700
+    |BitAnd         = 0x0800
     //12
-    |Xor            = 0x0800
+    |Xor            = 0x0900
     //13
-    |BitOr          = 0x0900
+    |BitOr          = 0x0A00
     //14
-    |And            = 0x0A00
+    |And            = 0x0B00
     //15
-    |Or             = 0x0B00
+    |Or             = 0x0C00
     //17
-    |Ternary        = 0x0C00
-    |Assign         = 0x0C01
-    |AssignAdd      = 0x0C02
-    |AssignSub      = 0x0C03
-    |AssignMul      = 0x0C04
-    |AssignDiv      = 0x0C05
-    |AssignMod      = 0x0C06
-    |AssignAnd      = 0x0C07
-    |AssignXor      = 0x0C08
-    |AssignOr       = 0x0C09
-    |AssignShr      = 0x0C0A
-    |AssignShl      = 0x0C0B
+    |Ternary        = 0x0D00
+    |Assign         = 0x0D01
+    |AssignAdd      = 0x0D02
+    |AssignSub      = 0x0D03
+    |AssignMul      = 0x0D04
+    |AssignDiv      = 0x0D05
+    |AssignMod      = 0x0D06
+    |AssignAnd      = 0x0D07
+    |AssignXor      = 0x0D08
+    |AssignOr       = 0x0D09
+    |AssignShr      = 0x0D0A
+    |AssignShl      = 0x0D0B
     //18
-    |Comma          = 0x0D00
+    |Comma          = 0x0E00
 
 
 and [<RequireQualifiedAccess>] Literal = 

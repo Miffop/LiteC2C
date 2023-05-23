@@ -28,7 +28,7 @@ let main argv =
         tokens
         |>Parser.run(ExpressionParser.Expression)
         |>Option.map(fst>>fst)
-        |>Option.defaultValue (Error "parser failure")
+        |>Option.defaultValue (Expression.Error "parser failure")
     
     printfn "%A" exp
     
