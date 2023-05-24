@@ -10,6 +10,8 @@
     <Compile Include="Monad.fs" />
     <Compile Include="AST\AST.fs" />
     <Compile Include="AST\Translation.fs" />
+    <Compile Include="AST\Expression.fs" />
+    <Compile Include="AST\Command.fs" />
     <Compile Include="Parser\Parser.fs" />
     <Compile Include="Parser\Tokenisation.fs" />
     <Compile Include="Parser\Expression.fs" />

@@ -1,8 +1,4 @@
 ﻿int result = 1
-for int i = 2;i<10;i++ do
+for int i = 2;i <= a;i++ do
     result *= i
-do
-    a
-do
-    b
-while c
+return result

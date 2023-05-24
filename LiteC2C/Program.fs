@@ -28,12 +28,12 @@ let main argv =
             |>Parser.run(CommnadParser.codeblock)
             |>Option.map(fst>>fst)
         printfn "%A" exp
-        (*
-        let! result = 
-            exp
-            |>Translation.Translate Translation.Expression.E
         
-        printfn "%A" result*)
+        let result = 
+            exp
+            |>Translation.final CommandTranslation.command
+
+        printfn "%A" result
 
         return ()
     }|>ignore

@@ -104,4 +104,3 @@ and Expression =
     |F              of Operator
     |L              of Literal
     |Var            of string
-    |Error          of string
