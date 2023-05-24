@@ -1,7 +1,8 @@
-﻿if (int)c1 then 
-    a 1 2 3 
-else if c2() then 
-    (*(b+2))() 
-else
-    c
-,4
+﻿int result = 1
+for int i = 2;i<10;i++ do
+    result *= i
+do
+    a
+do
+    b
+while c

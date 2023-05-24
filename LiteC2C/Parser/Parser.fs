@@ -1,13 +1,10 @@
 ﻿namespace LiteC2C.Parser
 
+
 type Parser<'s,'t> = 
     |P of ('t list->('s*'t list)option)
 
-
-type OptionMonad() = 
-    member this.Return x = Some x
-    member this.ReturnFrom x = x
-    member this.Bind(Mx,f) = Option.bind f Mx
+open LiteC2C
 
 module Parser = 
     let run (P p) x = 
@@ -216,27 +213,28 @@ module Indentation =
         |s::ss -> (fun x y->x::y)<^>token s<*>pattern ss
         |[]    -> Parser.fail
 
-    let sameOrIndentedScope openToken closeToken p = P(
+    let private scope comp openToken closeToken p = P(
         function
         |(t,refp)::ts -> 
             let rec filter d r ts0=
                 match ts0 with
-                |(t,p)::ts when t = openToken && (d<>0 || p>=refp) -> filter (d+1) ((t,p)::r) ts
+                |(t,p)::ts when t = openToken && (d<>0 || comp p refp) -> filter (d+1) ((t,p)::r) ts
                 |(t,p)::ts when t = closeToken && d = 0-> r,ts0
                 |(t,p)::ts when t = closeToken -> filter (d-1) ((t,p)::r) ts
-                |(t,p)::ts when d <> 0 || p>=refp -> filter d ((t,p)::r) ts
+                |(t,p)::ts when d <> 0 || comp p refp -> filter d ((t,p)::r) ts
                 
                 |_->r,ts0
             let ts,rest = 
-                (t,refp)::ts
+                ts
                 |>filter 0 []
                
-            ts
-            |>List.rev
+            ((t,refp)::List.rev ts)
             |>Parser.run p
             |>Option.map(fun (x,ts)->x,ts@rest)
         |[] -> Parser.run p []
     )
+    let sameOrIndentedScope openToken closeToken p = scope (>=) openToken closeToken p
+    let indentedScope openToken closeToken p = scope (>) openToken closeToken p
 
     let bindOption f p = 
         Monad(){

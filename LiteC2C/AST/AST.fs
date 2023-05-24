@@ -16,18 +16,20 @@ type FunctionSignature =
         Parameters:Name list
     }
 and Defenitions = 
-    |GlobalVar of Name*Expression
-    |Typedef of Name*Type
-    |Functiondef of FunctionSignature
-    |Function of FunctionSignature*Codeblock
-and Codeblock = Command list
-and Command = 
-    |LocalVar of Name*Expression
-    |IfThenElse of Expression*Codeblock
-    |WhileLoop of Expression*Codeblock
-    |ForLoop of Command*Expression*Expression*Codeblock
-    |DoBlock of Codeblock
-and Operator =
+    |GlobalVar      of Name*Expression
+    |Typedef        of Name*Type
+    |Functiondef    of FunctionSignature
+    |Function       of FunctionSignature*Command
+and [<RequireQualifiedAccess>] Command = 
+    |LocalVar       of Type*Expression
+    |IfThenElse     of Expression*Command*Command
+    |WhileLoop      of Expression*Command
+    |DoWhileLoop    of Command*Expression
+    |ForLoop        of Command*Expression*Expression*Command
+    |Codeblock      of Command list
+    |Computation    of Expression
+
+and [<RequireQualifiedAccess>] Operator =
     //2
     |IncPost        = 0x0100
     |DecPost        = 0x0101
@@ -91,15 +93,15 @@ and Operator =
 
 
 and [<RequireQualifiedAccess>] Literal = 
-    |Int of int
-    |Float of float
-    |Char of string
-    |String of string
-    |TypeName of Type
+    |Int            of int
+    |Float          of float
+    |Char           of string
+    |String         of string
+    |TypeName       of Type
 
 and Expression = 
-    |Application of Expression*Expression list
-    |F of Operator
-    |L of Literal
-    |Var of string
-    |Error of string
+    |Application    of Expression*Expression list
+    |F              of Operator
+    |L              of Literal
+    |Var            of string
+    |Error          of string

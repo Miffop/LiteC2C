@@ -93,9 +93,14 @@ module Tokenisation =
             let ops = 
                 [
                     "sizeof"
+
                     "if"
                     "then"
                     "else"
+
+                    "while"
+                    "for"
+                    "do"
                 ]
             function 
             |x when List.contains x ops -> Token.Op x
