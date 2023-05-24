@@ -28,6 +28,11 @@ and [<RequireQualifiedAccess>] Command =
     |ForLoop        of Command*Expression*Expression*Command
     |Codeblock      of Command list
     |Computation    of Expression
+    |Return         of Expression
+    |Goto           of string
+    |Label          of string
+    |SwitchCase     of Expression*(Expression*Command list)list
+    |Nope
 
 and [<RequireQualifiedAccess>] Operator =
     //2

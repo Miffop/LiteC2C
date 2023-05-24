@@ -101,6 +101,15 @@ module Tokenisation =
                     "while"
                     "for"
                     "do"
+                    "switch"
+                    "of"
+                    "case"
+
+                    "return"
+                    "break"
+                    "continue"
+                    "goto"
+                    "label"
                 ]
             function 
             |x when List.contains x ops -> Token.Op x

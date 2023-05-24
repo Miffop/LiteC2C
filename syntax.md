@@ -42,6 +42,25 @@ while(a){
 	b;
 }
 
+# конструкция switch-case
+
+switch s of
+	case c1 do
+	case c2 do
+		b
+	case c3 do
+		c
+		break
+=>
+switch(s){
+	case c1:
+	case c2:
+		b;
+	case c3:
+		c;
+		break;
+}
+
 # цикл do-while
 
 do
@@ -92,5 +111,29 @@ printf("%i",1)
 bar (foo x y) z
 => 
 bar(foo(x,y),z)
+
+doSomething()
+=>
+doSomthing()
+
+# break, continue, return
+
+break
+continue
+return a 1 2
+=>
+break;
+continue;
+return a(1,2);
+
+# goto и метки
+
+label meow
+goto meow
+=>
+moew:
+goto meow;
+
+
 
 

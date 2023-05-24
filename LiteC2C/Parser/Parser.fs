@@ -164,6 +164,8 @@ module Indentation =
             let! x = Parser.some p
             return List.map fst x,pos
         }
+    let option p = 
+        Some <^> p <|> lazy(ret None)
     
     
     

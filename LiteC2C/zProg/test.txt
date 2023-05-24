@@ -1,4 +1,10 @@
-﻿int result = 1
-for int i = 2;i <= a;i++ do
-    result *= i
-return result
+﻿if a % 2 == 0 then
+    goto haf
+if a % 2 != 0 then
+   goto meow
+label haf
+printf "haf!\n" 
+return 0
+label meow
+printf "meow!\n"
+return 1
