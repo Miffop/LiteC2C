@@ -1,17 +1,17 @@
 
-# цель создания LiteC2C
+# С†РµР»СЊ СЃРѕР·РґР°РЅРёСЏ LiteC2C
 
-умбрать ненужный шум ввиде фигурыных скобок и точек с запятой из C
+СѓР±СЂР°С‚СЊ РЅРµРЅСѓР¶РЅС‹Р№ С€СѓРј РІРІРёРґРµ С„РёРіСѓСЂС‹РЅС‹С… СЃРєРѕР±РѕРє Рё С‚РѕС‡РµРє СЃ Р·Р°РїСЏС‚РѕР№ РёР· C
 
 
-# присваивание
+# РїСЂРёСЃРІР°РёРІР°РЅРёРµ
 
 int a = 
 	2 + 2 * 2
 =>
 int a = 2 + 2 * 2;
 
-# ветвления
+# РІРµС‚РІР»РµРЅРёСЏ
 
 if c1 then
 	a
@@ -27,13 +27,13 @@ if(c1){
 }else{
 	c;
 }
-# тернарный оператор
+# С‚РµСЂРЅР°СЂРЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ
 
 int x = if c then a else b
 =>
 int x = c?a:b
 
-# цикл while
+# С†РёРєР» while
 
 while a do
 	b
@@ -42,7 +42,7 @@ while(a){
 	b;
 }
 
-# конструкция switch-case
+# РєРѕРЅСЃС‚СЂСѓРєС†РёСЏ switch-case
 
 switch s of
 	case c1 do
@@ -61,7 +61,7 @@ switch(s){
 		break;
 }
 
-# цикл do-while
+# С†РёРєР» do-while
 
 do
 	b
@@ -71,7 +71,7 @@ do{
 	b;
 }while(a)
 
-# цикл for
+# С†РёРєР» for
 
 for int i = 0; i < x ; i++ do
 	a
@@ -80,7 +80,20 @@ for(int i=0;i < x;i++){
 	a;
 }
 
-# обьявление функций
+# РІР»РѕР¶С‹РЅРЅС‹Р№ Р±Р»РѕРє РєРѕРґР°
+
+do
+	a
+	b
+	c
+=>
+{
+	a;
+	b;
+	c;
+}
+
+# РѕР±СЊСЏРІР»РµРЅРёРµ С„СѓРЅРєС†РёР№
 
 int fact x = 
 	int a = 1
@@ -102,7 +115,7 @@ int main(){
 	return 0;
 }
 
-# вызов функции
+# РІС‹Р·РѕРІ С„СѓРЅРєС†РёРё
 
 printf "%i" 1
 =>
@@ -126,7 +139,7 @@ break;
 continue;
 return a(1,2);
 
-# goto и метки
+# goto Рё РјРµС‚РєРё
 
 label meow
 goto meow
@@ -134,6 +147,37 @@ goto meow
 moew:
 goto meow;
 
+# struct Рё union
 
+struct p = 
+	int x
+	int y
+=>
+struct p{
+	int x;
+	int y;
+};
+union q = 
+	int i
+	float f
+=>
+union q{
+	int i;
+	float f;
+};
 
+# typedef
 
+typedef length = int
+=>
+typedef int length;
+
+typedef struct p = 
+	int x
+	int y
+=>
+struct p{ 
+	int x;
+	int y;
+};
+typedef struct p p;

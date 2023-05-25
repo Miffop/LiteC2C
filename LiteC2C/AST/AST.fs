@@ -1,25 +1,33 @@
 ﻿namespace LiteC2C.AST
 
-[<RequireQualifiedAccess>]
-type Type = 
-    |Custom of string
-    |Struct of Name list
-    |Pointer of Type
+
+type [<RequireQualifiedAccess>] Type = 
+    |Custom     of string
+    |Struct     of string
+    |Union      of string
+    |Pointer    of Type
+
 and Name =
     {
         Name:string
         Type:Type
     }
+
 type FunctionSignature = 
     {
         Name:Name
         Parameters:Name list
     }
-and Defenitions = 
-    |GlobalVar      of Name*Expression
-    |Typedef        of Name*Type
-    |Functiondef    of FunctionSignature
-    |Function       of FunctionSignature*Command
+
+and [<RequireQualifiedAccess>] Defenition = 
+    |GlobalVar      of Type*Expression
+    |Structdef      of string*Name list
+    |Uniondef       of string*Name list
+    |Typedef        of string*Type
+    |Function       of FunctionSignature
+    |Functiondef    of FunctionSignature*Command
+    |File           of Defenition list
+
 and [<RequireQualifiedAccess>] Command = 
     |LocalVar       of Type*Expression
     |IfThenElse     of Expression*Command*Command
@@ -95,7 +103,6 @@ and [<RequireQualifiedAccess>] Operator =
     |AssignShl      = 0x0D0B
     //18
     |Comma          = 0x0E00
-
 
 and [<RequireQualifiedAccess>] Literal = 
     |Int            of int

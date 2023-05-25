@@ -4,6 +4,7 @@ module CommandTranslation =
     let command = 
         let expression = Translation.final ExpressionTranslation.expression
         let typeName = Translation.final TypeTranslation.typeName
+        
         let appendSemicolon x =
             match x with
             |Command.Computation(_) ->[Data x;Text";\n"]
@@ -11,6 +12,7 @@ module CommandTranslation =
             |Command.Return(_)      ->[Data x;Text";\n"]
             |Command.Goto(_)        ->[Data x;Text";\n"]
             |_                      ->[Data x;Text"\n"]
+        
         let unrollSwitch cases = 
             let unrollCase (a,c) = 
                 Text"case "::expression a::Text":\n"::List.collect appendSemicolon c
@@ -32,3 +34,23 @@ module CommandTranslation =
         |Command.Goto(l)                        -> Text(sprintf "goto %s" l)
         |Command.Label(l)                       -> Text(sprintf "%s:" l)
         |Command.Nope                           -> Error("'Nope' command leak")
+    
+    let format (s:string) = 
+        let countToken x s = 
+            s
+            |>String.filter((=)x)
+            |>String.length
+        let countBrace o c s = 
+            countToken o s - countToken c s
+        let lines = 
+            s.Split('\n')
+        lines
+        |>Seq.ofArray
+        |>Seq.scan(fun a b -> a+countBrace '{' '}' b)0
+        |>Seq.zip lines
+        |>Seq.map(fun (x,y) -> String.replicate (if x.StartsWith("}") then y - 1 else y) "   " + x + "\n")
+        |>Seq.reduce(+)
+
+            
+            
+        

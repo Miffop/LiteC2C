@@ -7,7 +7,11 @@ module TypeTranslation =
         function
         |Type.Custom        x -> Text(sprintf "%s" x)
         |Type.Pointer       x -> Mix[Data x;Text "*"]
-        |Type.Struct        x -> Mix([Text "struct{"]@ List.collect name x @[Text"}"])
+        |Type.Struct        x -> Text("struct " + x)
+        |Type.Union         x -> Text("union " + x)
+
+    let name (n:Name) = 
+        Mix[Translation.final typeName n.Type;Text(" " + n.Name)]
 
 module ExpressionTranslation = 
     let literal = 
@@ -17,22 +21,26 @@ module ExpressionTranslation =
         |Literal.Char     x -> Text<|sprintf "'%s'"   x
         |Literal.String   x -> Text<|sprintf "\"%s\"" x
         |Literal.TypeName x -> Mix[Text"(";Translation.final TypeTranslation.typeName x;Text")"]
+
     let PrecedenceUnary ref a = 
         match a with
         |Application(F x,y) when (int x &&& 0xFF00) > (int ref &&& 0xFF00) -> Mix[Text"(";Data a;Text")"]
         |x->Data x
+
     let private PrecedenceGeq ref a = 
         match a with
         |Application(F x,y) when (int x &&& 0xFF00) >= (int ref &&& 0xFF00) -> Mix[Text"(";Data a;Text")"]
         |x->Data x
+
     let BinaryOpLeft ref op a b =
         let q = ref
         Mix[PrecedenceUnary ref a;Text op;PrecedenceGeq ref b]
+
     let BinaryOpRight ref op a b =
         Mix[PrecedenceGeq ref a;Text op;PrecedenceUnary ref b]
+
     let expression =
-        function
-            
+        function            
         //2
         |Application(F Operator.IncPost,    a::[])      -> Mix[PrecedenceUnary(Operator.IncPost) a;Text "++"]
         |Application(F Operator.DecPost,    a::[])      -> Mix[PrecedenceUnary(Operator.DecPost) a;Text "--"]

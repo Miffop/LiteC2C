@@ -5,17 +5,33 @@ open LiteC2C.AST
 open Indentation.Ops
 
 module TypeParser = 
+    let private word = Tokenisation.word 
     let customType = 
-        Indentation.bindOption(function Token.Word(x)->Some(Type.Custom x) | x->None)Parser.one
+        Type.Custom <^> word
+    let unionAndStructType = 
+        [
+            lazy(Type.Union <^ Indentation.token(Token.Op "union") <*> word)
+            lazy(Type.Struct <^ Indentation.token(Token.Op "struct") <*> word)
+        ]
+        |>Parser.choose
     let pointerType =
         Indentation.chainPostfix(Type.Pointer<^Indentation.token(Token.Op "*"))
 
 
     let rec parser = 
         [
-            lazy(pointerType customType)
+            lazy(customType)
+            lazy(unionAndStructType)
         ]
         |>Parser.choose
+        |>pointerType
+    let name = 
+        Indentation.Monad(){
+            let! t = parser
+            let! n = word
+            return { Name = n; Type = t }
+        }
+        
 
 module ExpressionParser = 
     

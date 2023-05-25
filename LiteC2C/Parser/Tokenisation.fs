@@ -110,6 +110,10 @@ module Tokenisation =
                     "continue"
                     "goto"
                     "label"
+
+                    "struct"
+                    "union"
+                    "typedef"
                 ]
             function 
             |x when List.contains x ops -> Token.Op x
@@ -148,4 +152,5 @@ module Tokenisation =
     let Tokenizer = 
         let Void = Indentation.any(Indentation.satisfy System.Char.IsWhiteSpace)
         Void*>Parser.any(AllTokens<*Void)
-        
+    
+    let word = Indentation.bindOption (function Token.Word x ->Some x | _ -> None) Parser.one

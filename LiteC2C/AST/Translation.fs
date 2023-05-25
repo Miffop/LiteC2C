@@ -28,3 +28,4 @@ module Translation =
         match translate translator data with
         |Text(x)->Text(x)
         |x->Error(sprintf "cannot reduce: %A" x)
+

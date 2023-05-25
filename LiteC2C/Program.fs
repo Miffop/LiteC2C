@@ -25,18 +25,22 @@ let main argv =
     
         let! exp = 
             tokens
-            |>Parser.run(CommnadParser.codeblock)
+            |>Parser.run(DefenitionParser.file)
             |>Option.map(fst>>fst)
         printfn "%A" exp
         
         let result = 
             exp
-            |>Translation.final CommandTranslation.command
+            |>Translation.final DefenitionTranslation.defention
 
-        printfn "%A" result
+        match result with
+        |Text(x)-> printfn "результат:\n%s" (CommandTranslation.format x)
+        |Error(x)->printfn "ошибка:%s" x
+        |_->printfn "неизвестная ошибка"
+        |>ignore
 
         return ()
     }|>ignore
-    
+
     System.Console.ReadKey()|>ignore
     0

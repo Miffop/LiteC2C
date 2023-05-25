@@ -12,10 +12,12 @@
     <Compile Include="AST\Translation.fs" />
     <Compile Include="AST\Expression.fs" />
     <Compile Include="AST\Command.fs" />
+    <Compile Include="AST\Defenition.fs" />
     <Compile Include="Parser\Parser.fs" />
     <Compile Include="Parser\Tokenisation.fs" />
     <Compile Include="Parser\Expression.fs" />
     <Compile Include="Parser\Сommand.fs" />
+    <Compile Include="Parser\Defention.fs" />
     <Content Include="zProg\test.txt" />
     <Content Include="zProg\Factorial.txt" />
     <Compile Include="Program.fs" />
