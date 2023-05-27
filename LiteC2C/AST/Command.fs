@@ -1,9 +1,21 @@
 ﻿namespace LiteC2C.AST
 
 module CommandTranslation = 
+    let private expression x = Translation.final ExpressionTranslation.expression x
+    let private typeName x = Translation.final TypeTranslation.typeName x
+    
+    let storageClass s = 
+        match s with
+        |StorageClass.Auto      -> Text"auto"
+        |StorageClass.Register  -> Text"register"
+        |StorageClass.Extern    -> Text"extern"
+        |StorageClass.Static    -> Text"static"
+    let declaration (d:Declaration) =   
+        let declaration = [typeName d.Type;Text" ";expression d.Expression]
+        match d.StorageClassOption with
+        |None       -> Mix declaration
+        |Some(s)    -> Mix(Translation.final storageClass s::Text " "::declaration)
     let command = 
-        let expression = Translation.final ExpressionTranslation.expression
-        let typeName = Translation.final TypeTranslation.typeName
         
         let appendSemicolon x =
             match x with
@@ -20,7 +32,7 @@ module CommandTranslation =
             
         function
         |Command.Computation(e)                 -> Mix[expression e]
-        |Command.LocalVar(t,e)                  -> Mix[typeName t;Text" ";expression e]
+        |Command.LocalVar(d)                    -> Mix[Translation.final declaration d]
         |Command.Codeblock(commands)            -> Mix([Text"{\n"]@ List.collect appendSemicolon commands @ [Text"}"])
         |Command.WhileLoop(cond,body)           -> Mix[Text"while(";expression cond;Text")";Data body]
         |Command.DoWhileLoop(body,cond)         -> Mix[Text"do\n";Data body;Text"while(";expression cond;Text");\n"]

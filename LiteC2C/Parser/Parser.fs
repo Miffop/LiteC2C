@@ -228,7 +228,7 @@ module Indentation =
                 |_->r,ts0
             let ts,rest = 
                 ts
-                |>filter 0 []
+                |>filter (if t = openToken then 1 else 0) []
                
             ((t,refp)::List.rev ts)
             |>Parser.run p

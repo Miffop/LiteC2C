@@ -13,6 +13,43 @@ module TypeTranslation =
     let name (n:Name) = 
         Mix[Translation.final typeName n.Type;Text(" " + n.Name)]
 
+    
+    module Arrow = 
+        type arrowTypeAsList = 
+            {
+                Result:Type
+                ArgumentsFliped:ArrowOrType list list
+            }
+        type arrowWithName = 
+            {
+                Name:string
+                Arrow:ArrowType
+            }
+        let rec arrow2ArrowAsList argumentsFliped (a:ArrowType) = 
+            match a.Result with
+            |ArrowOrType.Type x -> { Result = x; ArgumentsFliped = a.Arguments::argumentsFliped }
+            |ArrowOrType.Arrow x -> arrow2ArrowAsList (a.Arguments::argumentsFliped) x
+        
+        let translator (a:arrowWithName) =
+            let arrowOrType =
+                function
+                |ArrowOrType.Arrow f -> Data { Arrow = f; Name = ""}
+                |ArrowOrType.Type t  -> Translation.final typeName t
+            let arguments =
+                function
+                |[]     -> [Text(")()")]
+                |x::y   -> [Text")(";arrowOrType x;Mix(List.collect(fun x -> [Text",";arrowOrType x])y);Text")"]
+            let arrowAsList = 
+                arrow2ArrowAsList [] a.Arrow
+            let stars = 
+                List.replicate (List.length arrowAsList.ArgumentsFliped) (Text"(*")
+            let args = 
+                List.collect(arguments)<|List.rev arrowAsList.ArgumentsFliped
+            Mix[Translation.final typeName arrowAsList.Result;Mix(stars);Text a.Name;Mix(args)]
+    let arrowFinal (name:string) (a:ArrowType) =
+        Translation.final Arrow.translator { Arrow.Arrow = a; Arrow.Name = name }
+        
+
 module ExpressionTranslation = 
     let literal = 
         function

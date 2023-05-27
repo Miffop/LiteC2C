@@ -1,16 +1,16 @@
-﻿struct point = 
-    int x
-    int y
-union result = 
-    int res
-    char* error
+﻿typedef int2int = int -> int
+typedef f2int = (int -> int) -> int
+typedef int2f2int = int -> (int -> int) -> int
 
-typedef length = int
-
-typedef struct vec3 = 
-    struct point xy
-    float z
-
-typedef union intOrFloat = 
-    int i
-    float f
+int dup int a = 
+    return a * 2
+static int g,f
+int cpipe int2int f
+f2int pipe int x = 
+    g = x
+    return &cpipe
+int cpipe int2int f = 
+    return (*f) g
+int main () = 
+    int2f2int f = &pipe
+    printf "pipe 3 dup = %i" ((*(*f)3)(&dup))

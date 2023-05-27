@@ -4,25 +4,39 @@ open LiteC2C.AST
 open Indentation.Ops
 
 module CommnadParser = 
-    
-    
-    let keyword x = Indentation.token(Token.Op x)
-    let expression = ExpressionParser.Expression
-    let typeName = TypeParser.parser
-    let word = Indentation.bindOption(function Token.Word x -> Some x | _ -> None)Parser.one
+    let private keyword x = Indentation.token(Token.Op x)
+    let private expression = ExpressionParser.Expression
+    let private typeName = TypeParser.parser
+    let private word = Indentation.bindOption(function Token.Word x -> Some x | _ -> None)Parser.one
 
+    let storageClass = 
+        [
+            lazy(StorageClass.Auto <^ keyword "auto")
+            lazy(StorageClass.Register <^ keyword "register")
+            lazy(StorageClass.Extern <^ keyword "extern")
+            lazy(StorageClass.Static <^ keyword "static")
+        ]
+        |>Parser.choose
 
-    let localVar = 
+    let declaration = 
         Indentation.Monad(){
-            let! t = typeName
-            let! e = expression
-            match e with
-            |Application(F Operator.Assign,_)                                   -> return Command.LocalVar(t,e)
-            |Application(F Operator.Comma,Application(F Operator.Assign,_)::_)  -> return Command.LocalVar(t,e)
+            let! storageClassOption = Indentation.option storageClass
+            let! typeName = typeName
+            let! expression = expression
+            match expression with
+            |Application(F Operator.Assign,_)                                   
+            |Application(F Operator.Comma,Application(F Operator.Assign,_)::_)  
+            |Var(_)                                                             
+            |Application(F Operator.Comma,Var(_)::_)                            -> return {StorageClassOption = storageClassOption; Type = typeName; Expression = expression}
             |_                                                                  -> return! Parser.fail
         }|>Indentation.indentedScope (Token.Open "(") (Token.Close "(")
+
+    let localVar = 
+        Command.LocalVar<^>declaration
+
     let computation = 
         Command.Computation<^>Indentation.indentedScope (Token.Open "(") (Token.Close "(") ExpressionParser.Expression
+    
     let whileLoop codeblock = 
         Indentation.Monad(){
             let! _ = keyword "while"
@@ -31,6 +45,7 @@ module CommnadParser =
             let! body = codeblock
             return Command.WhileLoop(cond,body)
         }
+    
     let doWhileLoop codeblock = 
         Indentation.Monad(){
             let! _ = keyword "do"
@@ -39,6 +54,7 @@ module CommnadParser =
             let! cond = expression
             return Command.DoWhileLoop(body,cond)
         }
+    
     let ifThenElse codeblock = 
         let elseIf = 
             Indentation.Monad(){
@@ -58,6 +74,7 @@ module CommnadParser =
             let! b = Indentation.option(keyword "else" *> codeblock)
             return Command.IfThenElse(cond,a,List.foldBack id branches (Option.defaultValue Command.Nope b))
         }
+    
     let forLoop command codeblock = 
         Indentation.Monad(){
             let! _ = keyword "for"
@@ -70,10 +87,13 @@ module CommnadParser =
             let! body = codeblock
             return Command.ForLoop(init,cond,inc,body)
         }
+    
     let doBlock codeblock = 
         keyword "do"*>codeblock
+    
     let returnStatement =
         Command.Return<^keyword "return"<*>ExpressionParser.Expression
+    
     let breakContinueGoto = 
         [
             lazy(Command.Computation(Var"break")<^keyword"break")
@@ -114,5 +134,6 @@ module CommnadParser =
             lazy(computation)
         ]
         |>Parser.choose
+    
     and codeblock = 
         Command.Codeblock<^>Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any command)

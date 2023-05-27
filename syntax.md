@@ -115,6 +115,20 @@ int main(){
 	return 0;
 }
 
+int a int x
+int b int x = 
+    return a x
+int a int x = 
+    return x
+=>
+int a(int x);
+int b(int x){
+   return a(x);
+}
+int a(int x){
+   return x;
+}r
+
 # вызов функции
 
 printf "%i" 1
@@ -181,3 +195,13 @@ struct p{
 	int y;
 };
 typedef struct p p;
+
+# указатель на функцию
+
+typedef int2int = int -> int
+=>
+typedef int(*int2int)(int);
+
+typedef bin = int,int -> int
+=>
+typedef int(*bin)(int,int)

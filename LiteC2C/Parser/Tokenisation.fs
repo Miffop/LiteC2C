@@ -114,6 +114,11 @@ module Tokenisation =
                     "struct"
                     "union"
                     "typedef"
+
+                    "auto"
+                    "register"
+                    "extern"
+                    "static"
                 ]
             function 
             |x when List.contains x ops -> Token.Op x

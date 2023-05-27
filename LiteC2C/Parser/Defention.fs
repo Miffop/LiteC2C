@@ -9,16 +9,12 @@ module DefenitionParser =
     let private name        = TypeParser.name
     let private codeblock   = CommnadParser.codeblock
     let private keyword     = Indentation.token<<Token.Op
+    let private declaration = CommnadParser.declaration
+    let private sameOrIndented x = Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") x
+    let private indented x  = Indentation.indentedScope (Token.Open "(") (Token.Close "(") x
 
     let globalVar = 
-        Indentation.Monad(){
-            let! t = typeName
-            let! e = expression
-            match e with
-            |Application(F Operator.Assign,_)                                   -> return Defenition.GlobalVar(t,e)
-            |Application(F Operator.Comma,Application(F Operator.Assign,_)::_)  -> return Defenition.GlobalVar(t,e)
-            |_                                                                  -> return! Parser.fail
-        }|>Indentation.indentedScope (Token.Open "(") (Token.Close "(")
+        Defenition.GlobalVar<^>declaration
     
     let functionSignature = 
         Indentation.Monad(){
@@ -43,7 +39,7 @@ module DefenitionParser =
             let! _ = keyword "struct"
             let! n = Tokenisation.word
             let! _ = keyword "="
-            let! f = Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any name)
+            let! f = sameOrIndented (Indentation.any name)
             return Defenition.Structdef(n,f)
         }
     let unionDefenition = 
@@ -51,7 +47,7 @@ module DefenitionParser =
             let! _ = keyword "union"
             let! n = Tokenisation.word
             let! _ = keyword "="
-            let! f = Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any name)
+            let! f = sameOrIndented (Indentation.any name)
             return Defenition.Uniondef(n,f)
         }
     let typedef = 
@@ -59,7 +55,7 @@ module DefenitionParser =
             let! _ = keyword "typedef"
             let! n = Tokenisation.word
             let! _ = keyword "="
-            let! t = typeName
+            let! t = sameOrIndented typeName
             return Defenition.Typedef(n,t)
         }
     let typedefStruct = 
@@ -68,7 +64,7 @@ module DefenitionParser =
             let! _ = keyword "struct"
             let! n = Tokenisation.word
             let! _ = keyword "="
-            let! f = Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any name)
+            let! f = sameOrIndented (Indentation.any name)
             return Defenition.File[Defenition.Structdef(n,f);Defenition.Typedef(n,Type.Struct n)]
         }
     let typedefUnion = 
@@ -77,8 +73,16 @@ module DefenitionParser =
             let! _ = keyword "union"
             let! n = Tokenisation.word
             let! _ = keyword "="
-            let! f = Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any name)
+            let! f = sameOrIndented (Indentation.any name)
             return Defenition.File[Defenition.Uniondef(n,f);Defenition.Typedef(n,Type.Union n)]
+        }
+    let typedefFunctionPointer = 
+        Indentation.Monad(){
+            let! _ = keyword "typedef"
+            let! n = Tokenisation.word
+            let! _ = keyword "="
+            let! f = sameOrIndented TypeParser.functionPointer
+            return Defenition.TypedefFunctionPointer(n,f)
         }
     
     
@@ -88,11 +92,13 @@ module DefenitionParser =
             lazy(unionDefenition)
             lazy(typedefStruct)
             lazy(typedefUnion)
+            lazy(typedefFunctionPointer)
             lazy(typedef)
             lazy(functionDefention)
             lazy(functionDeclaration)
             lazy(globalVar)
         ]
         |>Parser.choose
+        |>indented
     let file = 
         Defenition.File<^>Indentation.any defention

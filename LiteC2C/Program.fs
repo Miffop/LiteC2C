@@ -29,6 +29,7 @@ let main argv =
             |>Option.map(fst>>fst)
         printfn "%A" exp
         
+        
         let result = 
             exp
             |>Translation.final DefenitionTranslation.defention
@@ -38,6 +39,7 @@ let main argv =
         |Error(x)->printfn "ошибка:%s" x
         |_->printfn "неизвестная ошибка"
         |>ignore
+        
 
         return ()
     }|>ignore

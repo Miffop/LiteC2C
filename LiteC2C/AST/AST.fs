@@ -1,11 +1,22 @@
 ﻿namespace LiteC2C.AST
 
 
+
 type [<RequireQualifiedAccess>] Type = 
     |Custom     of string
     |Struct     of string
     |Union      of string
     |Pointer    of Type
+
+type ArrowType = 
+    { 
+        Arguments : ArrowOrType list;
+        Result : ArrowOrType
+    }
+and [<RequireQualifiedAccess>] ArrowOrType = 
+    |Arrow of ArrowType
+    |Type of Type
+
 
 and Name =
     {
@@ -13,23 +24,38 @@ and Name =
         Type:Type
     }
 
+type [<RequireQualifiedAccess>] StorageClass = 
+    |Auto
+    |Register
+    |Extern
+    |Static
+
 type FunctionSignature = 
     {
         Name:Name
         Parameters:Name list
     }
 
+type Declaration = 
+    {
+        StorageClassOption:StorageClass option
+        Type:Type
+        Expression:Expression
+    }
+
 and [<RequireQualifiedAccess>] Defenition = 
-    |GlobalVar      of Type*Expression
+    |GlobalVar      of Declaration
     |Structdef      of string*Name list
     |Uniondef       of string*Name list
     |Typedef        of string*Type
+    |TypedefFunctionPointer
+                    of string*ArrowType
     |Function       of FunctionSignature
     |Functiondef    of FunctionSignature*Command
     |File           of Defenition list
 
 and [<RequireQualifiedAccess>] Command = 
-    |LocalVar       of Type*Expression
+    |LocalVar       of Declaration
     |IfThenElse     of Expression*Command*Command
     |WhileLoop      of Expression*Command
     |DoWhileLoop    of Command*Expression

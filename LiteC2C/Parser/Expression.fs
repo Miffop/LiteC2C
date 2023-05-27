@@ -31,7 +31,32 @@ module TypeParser =
             let! n = word
             return { Name = n; Type = t }
         }
+    
+    let rec functionPointer = 
+        let result =
+            ArrowOrType.Type <^> parser
+        let argument = 
+            [
+                lazy(Indentation.packLazy (Token.Open "(") (lazy(ArrowOrType.Arrow<^>functionPointer)) (Token.Close "("))
+                lazy(result)
+            ]
+            |>Parser.choose
+        let arguments = 
+            (fun x y -> x::y) <^> argument <*> Indentation.any(Indentation.token(Token.Op ",") *> argument) <|> lazy([] <^ Indentation.token(Token.Op "()"))
         
+        [
+            lazy(ArrowOrType.Arrow<^>functionPointer)
+            lazy(result)
+        ]
+        |>Parser.choose
+        |>(<^>)(fun result arguments -> { Arguments = arguments; Result = result })
+        |>(<**>)(arguments <* Indentation.token(Token.Op "->"))
+
+
+        
+        
+
+
 
 module ExpressionParser = 
     
