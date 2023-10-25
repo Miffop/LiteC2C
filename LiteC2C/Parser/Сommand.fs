@@ -5,8 +5,6 @@ open Indentation.Ops
 
 module CommnadParser = 
     let private keyword x = Indentation.token(Token.Op x)
-    let private expression = ExpressionParser.Expression
-    let private typeName = TypeParser.parser
     let private word = Indentation.bindOption(function Token.Word x -> Some x | _ -> None)Parser.one
 
     let storageClass = 
@@ -18,7 +16,7 @@ module CommnadParser =
         ]
         |>Parser.choose
 
-    let declaration = 
+    let declaration typeName expression= 
         Indentation.Monad(){
             let! storageClassOption = Indentation.option storageClass
             let! typeName = typeName
@@ -31,13 +29,13 @@ module CommnadParser =
             |_                                                                  -> return! Parser.fail
         }|>Indentation.indentedScope (Token.Open "(") (Token.Close "(")
 
-    let localVar = 
-        Command.LocalVar<^>declaration
+    let localVar typeName expression = 
+        Command.LocalVar<^>(declaration typeName expression)
 
-    let computation = 
-        Command.Computation<^>Indentation.indentedScope (Token.Open "(") (Token.Close "(") ExpressionParser.Expression
+    let computation expression = 
+        Command.Computation<^>Indentation.indentedScope (Token.Open "(") (Token.Close "(") expression
     
-    let whileLoop codeblock = 
+    let whileLoop expression codeblock = 
         Indentation.Monad(){
             let! _ = keyword "while"
             let! cond = expression
@@ -46,7 +44,7 @@ module CommnadParser =
             return Command.WhileLoop(cond,body)
         }
     
-    let doWhileLoop codeblock = 
+    let doWhileLoop expression codeblock = 
         Indentation.Monad(){
             let! _ = keyword "do"
             let! body = codeblock
@@ -55,7 +53,7 @@ module CommnadParser =
             return Command.DoWhileLoop(body,cond)
         }
     
-    let ifThenElse codeblock = 
+    let ifThenElse expression codeblock = 
         let elseIf = 
             Indentation.Monad(){
                 let! _ = keyword "else"
@@ -75,7 +73,7 @@ module CommnadParser =
             return Command.IfThenElse(cond,a,List.foldBack id branches (Option.defaultValue Command.Nope b))
         }
     
-    let forLoop command codeblock = 
+    let forLoop expression command codeblock = 
         Indentation.Monad(){
             let! _ = keyword "for"
             let! init = command
@@ -91,19 +89,19 @@ module CommnadParser =
     let doBlock codeblock = 
         keyword "do"*>codeblock
     
-    let returnStatement =
-        Command.Return<^keyword "return"<*>ExpressionParser.Expression
+    let returnStatement expression =
+        Command.Return<^keyword "return" <*> expression
     
     let breakContinueGoto = 
         [
-            lazy(Command.Computation(Var"break")<^keyword"break")
-            lazy(Command.Computation(Var"continue")<^keyword"continue")
-            lazy(Command.Goto<^keyword"goto"<*>word)
-            lazy(Command.Label<^keyword"label"<*>word)
+            lazy(Command.Computation(Var"break") <^ keyword"break")
+            lazy(Command.Computation(Var"continue") <^ keyword"continue")
+            lazy(Command.Goto <^ keyword"goto" <*> word)
+            lazy(Command.Label <^ keyword"label" <*> word)
         ]
         |>Parser.choose
 
-    let switchCase command =
+    let switchCase expression command =
         let caseDo = 
             Indentation.Monad(){
                 let! _ = keyword "case"
@@ -114,26 +112,29 @@ module CommnadParser =
             }
         Indentation.Monad(){
             let! _ = keyword "switch"
-            let! a = ExpressionParser.Expression
+            let! a = expression
             let! _ = keyword "of"
             let! c = Indentation.some caseDo
             return Command.SwitchCase(a,c)
         }
 
-    let rec command = 
+
+    let rec allElements typeName expression (system:_ Lazy) (element:_ Lazy) = 
         [
-            lazy(ifThenElse codeblock)
-            lazy(whileLoop codeblock)
-            lazy(doWhileLoop codeblock)
-            lazy(forLoop command codeblock)
-            lazy(doBlock codeblock)
-            lazy(switchCase command)
-            lazy(returnStatement)
+            lazy(ifThenElse expression system.Value)
+            lazy(whileLoop expression system.Value)
+            lazy(doWhileLoop expression system.Value)
+            lazy(forLoop expression element.Value system.Value)
+            lazy(doBlock system.Value)
+            lazy(switchCase expression element.Value)
+            lazy(returnStatement expression)
             lazy(breakContinueGoto)
-            lazy(localVar)
-            lazy(computation)
+            lazy(localVar typeName expression)
+            lazy(computation expression)
         ]
-        |>Parser.choose
-    
-    and codeblock = 
-        Command.Codeblock<^>Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any command)
+
+    let system (element:_ Lazy)= 
+        Command.Codeblock<^>Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") (Indentation.any element.Value)
+
+
+        

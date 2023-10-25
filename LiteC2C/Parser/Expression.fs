@@ -178,10 +178,10 @@ module ExpressionParser =
             |>Indentation.chain
     module Unary = 
         let private Op op x = Application(op,x::[])
-        let Precedence2 x = 
+        let Precedence2 expression = 
             let Indexation = 
                 Indentation.Monad(){
-                    let! e = Indentation.packLazy (Token.Open "[") x (Token.Close "[")
+                    let! e = Indentation.packLazy (Token.Open "[") expression (Token.Close "[")
                     return (fun x->Application(F Operator.Index,x::e::[]))
                 }
             [
@@ -212,24 +212,24 @@ module ExpressionParser =
             |>flip(<|>)(lazy(TypeCasting))
             |>Indentation.Backtracking.chainPrefix
     module Special = 
-        let IfThenElse x = 
+        let IfThenElse expression = 
             let elseif = 
                 Indentation.Monad(){
                     let! _ = Indentation.token(Token.Op "else")
                     let! _ = Indentation.token(Token.Op "if")
-                    let! c = x
+                    let! c = expression
                     let! _ = Indentation.token(Token.Op "then")
-                    let! a = x
+                    let! a = expression
                     return (fun b->Application(F Operator.Ternary,c::a::b::[]))
                 }
             Indentation.Monad(){
                 let! _ = Indentation.token(Token.Op "if")
-                let! c = x
+                let! c = expression
                 let! _ = Indentation.token(Token.Op "then")
-                let! a = x
+                let! a = expression
                 let! branches = Indentation.any elseif
                 let! _ = Indentation.token(Token.Op "else")
-                let! b = x
+                let! b = expression
                 return Application(F Operator.Ternary,c::a::List.foldBack id branches b::[])
             }
         
@@ -257,9 +257,11 @@ module ExpressionParser =
             Indentation.bindOption f Parser.one
         let typeName = 
             (Literal.TypeName>>L)<^>Indentation.pack(Token.Open "(") TypeParser.parser (Token.Close "(")
+        let braces system= 
+            Indentation.pack (Token.Open "(") system (Token.Close "(")
 
 
-    let rec Expression = 
+    let rec system (element:_ Lazy) = 
         let layers = 
             [
                 Binary.Precedence18 
@@ -275,18 +277,19 @@ module ExpressionParser =
                 Binary.Precedence6
                 Binary.Precedence5
                 Unary.Precedence3
-                Unary.Precedence2 (lazy(Expression))<||>Binary.Precedence2
+                Unary.Precedence2 (lazy(system element))<||>Binary.Precedence2
                 Special.FuctionCall
             ]
         Indentation.sameOrIndentedScope (Token.Open "(") (Token.Close "(") 
-        <|List.foldBack(fun x y->x y)layers Element
+        <|List.foldBack(fun x y->x y)layers element.Value
         
-    and Element = 
+
+    let element (system:_ Lazy) = 
         [
             lazy(Elem.literal)
             lazy(Elem.var)
             lazy(Elem.typeName)
-            lazy(Special.IfThenElse (Expression))
-            lazy(Indentation.packLazy (Token.Open "(") (lazy(Expression)) (Token.Close "("))
+            lazy(Special.IfThenElse system.Value)
+            lazy(Elem.braces system.Value)
         ]
         |>Parser.choose

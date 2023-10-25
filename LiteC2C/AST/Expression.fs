@@ -94,8 +94,8 @@ module ExpressionTranslation =
         |Application(F Operator.Deref,      a::[])      -> Mix[Text"*";PrecedenceUnary(Operator.Deref)a]
         |Application(F Operator.CastType,   a::b::[])   -> Mix[Data a;PrecedenceUnary(Operator.CastType)b]
         |Application(F Operator.SizeOf,     L(Literal.TypeName t)::[])
-                                                        -> Mix[Text"sizeof";Data(L<|Literal.TypeName t)]
-        |Application(F Operator.SizeOf,     a::[])      -> Mix[Text"sizeof ";PrecedenceUnary(Operator.SizeOf)a]
+                                                        -> Mix[Text"sizeof";Data(L<|Literal.TypeName t);]
+        |Application(F Operator.SizeOf,     a::[])      -> Mix[Text"sizeof(";PrecedenceUnary(Operator.SizeOf)a;Text")"]
         //5
         |Application(F Operator.Mul,        a::b::[])   -> BinaryOpLeft Operator.Mul        "*"     a b
         |Application(F Operator.Div,        a::b::[])   -> BinaryOpLeft Operator.Div        "/"     a b

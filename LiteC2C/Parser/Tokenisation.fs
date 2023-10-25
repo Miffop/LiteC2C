@@ -124,8 +124,8 @@ module Tokenisation =
             |x when List.contains x ops -> Token.Op x
             |x -> Token.Word x
         Indentation.Monad(){
-            let! x = Indentation.satisfy System.Char.IsLetter
-            let! xs = Indentation.any(Indentation.satisfy System.Char.IsLetterOrDigit)
+            let! x = Indentation.satisfy (fun x -> System.Char.IsLetter x || x = '_') 
+            let! xs = Indentation.any(Indentation.satisfy (fun x -> System.Char.IsLetterOrDigit x || x = '_'))
             return opOrWord<|List.fold(sprintf"%s%c")""(x::xs)
         }
 

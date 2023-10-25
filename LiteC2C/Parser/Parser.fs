@@ -63,6 +63,17 @@ module Parser =
     let token t = satisfy((=)t)
     let one = P(function t::ts->Some(t,ts) | []->None)
 
+    let rec element parsers (system:_ Lazy)= 
+        parsers system (lazy(element parsers system))
+        |>choose
+
+    let recursive system element = 
+        let rec Expression  =
+            system (lazy Element)
+        and Element = 
+            element (lazy Expression)
+        Expression
+
 [<CustomEquality>]
 [<CustomComparison>]
 type Position = 
@@ -94,9 +105,9 @@ module Indentation =
         Parser.Monad(){
             let! indentations = Parser.any(Parser.token indentationToken)
             let! restOfTheLine = Parser.any(Parser.satisfy((<>)resetToken))
-            let! _ = Parser.token resetToken
+            let! reset = Parser.token resetToken
             let indentation = List.length indentations
-            return List.mapi(fun i t->t,{Margin = indentation;Offset = i})restOfTheLine
+            return List.mapi(fun i t->t,{Margin = indentation;Offset = i})(restOfTheLine @ [reset])
         }
     let text indentationToken resetToken =
         List.concat<^>Parser.any(line indentationToken resetToken)
